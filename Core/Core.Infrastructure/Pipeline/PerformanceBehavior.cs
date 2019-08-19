@@ -1,6 +1,5 @@
 ﻿using Core.Domain.Entities;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.Collections.Generic;
