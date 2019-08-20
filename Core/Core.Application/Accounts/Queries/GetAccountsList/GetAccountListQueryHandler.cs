@@ -8,6 +8,9 @@ using Core.Infrastructure.Persistence.DocumentDatabase;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using System.Text;
+
+using AutoMapper;
+
 using Microsoft.Azure.Documents.Linq;
 using Core.Application.Accounts.Models.Views;
 using Core.Application.Accounts.Models.Documents;
@@ -19,13 +22,15 @@ namespace Core.Application.Accounts.Queries
     {
         //MediatR will automatically inject  dependencies
         private readonly IMediator _mediator;
+        private readonly IMapper _mapper;
         private readonly ICoreConfiguration _coreConfiguration;
         private readonly IDocumentContext _documentContext;
 
 
-        public GetAccountListQueryHandler(IDocumentContext documentContext, ICoreConfiguration coreConfiguration, IMediator mediator)
+        public GetAccountListQueryHandler(IDocumentContext documentContext, ICoreConfiguration coreConfiguration, IMediator mediator, IMapper mapper)
         {
             _mediator = mediator;
+            _mapper = mapper;
             _coreConfiguration = coreConfiguration;
             _documentContext = documentContext;
 
@@ -95,17 +100,18 @@ namespace Core.Application.Accounts.Queries
                     foreach (var accountDocument in result)
                     {
                         //Use AutoMapper to transform DocumentModel into Domain Model (Configure via Core.Startup.AutoMapperConfiguration)
-                        var account = AutoMapper.Mapper.Map<AccountListViewItem>(accountDocument);
+                        //var account = AutoMapper.Mapper.Map<AccountListViewItem>(accountDocument);
+                        var account = _mapper.Map<AccountListViewItem>(accountDocument);
                         accountsListViewModel.Accounts.Add(account);
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 // Log the exception
                 Log.Warning("There was an issue accessing the document store {@ex}", ex);
             }
-            
+
 
             return accountsListViewModel;
 

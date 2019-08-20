@@ -14,6 +14,9 @@ using Serilog;
 using Core.Application.Accounts.Commands.CreateAccount;
 using Core.Common.Responses;
 using System.Collections.Generic;
+
+using AutoMapper;
+
 using Microsoft.Azure.Documents;
 
 namespace Core.Application.Accounts.Commands
@@ -25,13 +28,15 @@ namespace Core.Application.Accounts.Commands
         private readonly ICoreConfiguration _coreConfiguration;
         private readonly IDocumentContext _documentContext;
         private readonly IEmailService _emailService;
+        private readonly IMapper _mapper;
 
-        public CreateAccountCommandHandler(IMediator mediator, IDocumentContext documentContext, ICoreConfiguration coreConfiguration, IEmailService emailService)
+        public CreateAccountCommandHandler(IMediator mediator, IDocumentContext documentContext, ICoreConfiguration coreConfiguration, IEmailService emailService, IMapper mapper)
         {
             _mediator = mediator;
             _coreConfiguration = coreConfiguration;
             _documentContext = documentContext;
             _emailService = emailService;
+            _mapper = mapper;
         }
 
         public async Task<CreateAccountCommandResponse> Handle(CreateAccountCommand request, CancellationToken cancellationToken)
@@ -56,14 +61,14 @@ namespace Core.Application.Accounts.Commands
             // I prefer using manual/granular validation within each command. 
             //=========================================================================
 
-            
+
             CreateAccountValidator validator = new CreateAccountValidator(_mediator);
             ValidationResult validationResult = validator.Validate(request);
-            if(!validationResult.IsValid)
+            if (!validationResult.IsValid)
             {
                 return new CreateAccountCommandResponse(validationResult.Errors) { Message = "One or more validation errors occurred." };
             }
-             
+
 
 
             //=========================================================================
@@ -108,9 +113,9 @@ namespace Core.Application.Accounts.Commands
             {
                 // Close any open connections, etc...
             }
-            
 
-            if(result.StatusCode == System.Net.HttpStatusCode.Created)
+
+            if (result.StatusCode == System.Net.HttpStatusCode.Created)
             {
                 //==========================================================================
                 // SEND EMAIL 
@@ -144,14 +149,15 @@ namespace Core.Application.Accounts.Commands
                 {
                     // Use alternate communication method...
                 }
-                
+
                 //==========================================================================
                 // AUTOMAPPER 
                 //=========================================================================
                 // Create our domain model using AutoMapper to be returned within our response object.
                 // Add additional mappings into the: Core.Startup.AutoMapperConfiguration class.
 
-                var account = AutoMapper.Mapper.Map<Account>(accountDocumentModel);
+                //var account = AutoMapper.Mapper.Map<Account>(accountDocumentModel);
+                var account = _mapper.Map<Account>(accountDocumentModel);
 
                 //==========================================================================
                 // POST COMMAND CHECKLIST 
@@ -163,7 +169,7 @@ namespace Core.Application.Accounts.Commands
                 return new CreateAccountCommandResponse { isSuccess = true, Account = account, Message = "Account created." };
             }
             else
-            {                  
+            {
                 return new CreateAccountCommandResponse { Message = "Could not save model to document store. Status code: " + result.StatusCode };
             }
         }

@@ -13,18 +13,22 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AutoMapper;
+
 namespace Core.Application.Accounts.Queries
 {
     public class GetAccountDetailsQueryHandler : IRequestHandler<GetAccountDetailsQuery, AccountDetailsViewModel>
     {
         //MediatR will automatically inject dependencies
         private readonly IMediator _mediator;
+        private readonly IMapper _mapper;
         private readonly ICoreConfiguration _coreConfiguration;
         private readonly IDocumentContext _documentContext;
 
-        public GetAccountDetailsQueryHandler(IDocumentContext documentContext, ICoreConfiguration coreConfiguration, IMediator mediator)
+        public GetAccountDetailsQueryHandler(IDocumentContext documentContext, ICoreConfiguration coreConfiguration, IMediator mediator, IMapper mapper)
         {
             _mediator = mediator;
+            _mapper = mapper;
             _coreConfiguration = coreConfiguration;
             _documentContext = documentContext;
 
@@ -33,7 +37,7 @@ namespace Core.Application.Accounts.Queries
 
         public async Task<AccountDetailsViewModel> Handle(GetAccountDetailsQuery request, CancellationToken cancellationToken)
         {
-            
+
             //==========================================================================
             // PRE QUERY CHECKLIST 
             //==========================================================================
@@ -60,7 +64,7 @@ namespace Core.Application.Accounts.Queries
             var result = _documentContext.Client.CreateDocumentQuery<AccountDocumentModel>(
                 collectionUri,
                 sqlSpec,
-                feedOptions 
+                feedOptions
             );
 
             AccountDocumentModel accountDocumentModel;
@@ -94,15 +98,16 @@ namespace Core.Application.Accounts.Queries
             accountViewModel.DeleteEnabled = true;
             accountViewModel.EditEnabled = true;
 
-            if(accountDocumentModel != null)
+            if (accountDocumentModel != null)
             {
                 //Use AutoMapper to transform DocumentModel into Domain Model (Configure via Core.Startup.AutoMapperConfiguration)
-                var account = AutoMapper.Mapper.Map<Account>(accountDocumentModel);
+                //var account = AutoMapper.Mapper.Map<Account>(accountDocumentModel);
+                var account = _mapper.Map<Account>(accountDocumentModel);
                 accountViewModel.Account = account;
             }
 
             return accountViewModel;
-            
+
         }
     }
 }

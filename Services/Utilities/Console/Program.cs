@@ -54,7 +54,7 @@ namespace ConsoleApp
             var configuration = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true) //<-- Copy from Core.Services project (or create one specific to this entry point) and set to 'CopyAlways' in file/solution properties
-               //.AddEnvironmentVariables() // (Optional) <-- Allows for Docker Env Variables
+                                                                                      //.AddEnvironmentVariables() // (Optional) <-- Allows for Docker Env Variables
               .Build();
 
             #endregion
@@ -132,7 +132,7 @@ namespace ConsoleApp
              * 
              * Note: MediatR should be added LAST. */
 
-            serviceCollection.AddMediatR();
+            serviceCollection.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
 
             // Build the provider
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -151,7 +151,7 @@ namespace ConsoleApp
 
             #region CREATE ACCOUNT
 
-            
+
             // Build our CreateAccount Command:
             var createAccountCommand = new CreateAccountCommand()
             {
@@ -161,7 +161,7 @@ namespace ConsoleApp
                 LastName = "Smith"
             };
 
-            
+
             try
             {
                 // Send our command to MediatR for processing...
@@ -172,7 +172,7 @@ namespace ConsoleApp
                 Console.WriteLine(createAccountResponse.isSuccess);
                 Console.WriteLine(createAccountResponse.Message);
 
-                if(createAccountResponse.ValidationIssues != null)
+                if (createAccountResponse.ValidationIssues != null)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("----------------------------------");
@@ -182,7 +182,7 @@ namespace ConsoleApp
                     {
                         Console.ForegroundColor = ConsoleColor.DarkRed;
                         Console.WriteLine(property.PropertyName);
-                        foreach(var failure in property.PropertyFailures)
+                        foreach (var failure in property.PropertyFailures)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine($" > {failure}");
@@ -223,7 +223,7 @@ namespace ConsoleApp
                 Console.WriteLine("----------------------------------------");
                 Console.WriteLine($" > {ex.Message}");
                 Console.WriteLine($" > {ex.StackTrace}");
-                if(ex.InnerException != null)
+                if (ex.InnerException != null)
                 {
                     Console.WriteLine();
                     Console.WriteLine($" > {ex.InnerException.StackTrace}");
@@ -233,7 +233,7 @@ namespace ConsoleApp
             }
 
             Console.ReadLine();
-          
+
             #endregion
 
             #region CREATE BATCH OF ACCOUNTS
